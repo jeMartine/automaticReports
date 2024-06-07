@@ -1,0 +1,139 @@
+body{
+    width: 8.5in;
+    height: 11in;
+    margin: 0 auto;
+}
+
+p{
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 17px;
+}
+
+.encabezado{
+    text-align: right;
+    font-style: italic;
+}
+.t1{
+    font-size: 18px;
+}
+
+.t2{
+    font-size: 22px;
+}
+
+.t3{
+    font-size: 13px;
+}
+
+.logoJaveriana{
+    height: 180px;
+    width: 130px;
+}
+.membrete {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid black; /* Línea negra separadora */
+}
+
+.titulo-y-estudiantes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.titulo {
+    margin-bottom: 20px; /* Espacio entre el título y los estudiantes */
+    font-size: 21px;
+}
+
+.estudiantes {
+    display: flex;
+    flex-direction: column;
+}
+
+.integrante, .lider {
+    margin: 5px 0; /* Ajusta el espacio entre los párrafos si es necesario */
+}
+
+.logoJaveriana {
+    width: 110px; /* Ajusta el tamaño de los logos */
+    height: auto;
+}
+.cdio {
+    width: 150px; /* Ajusta el tamaño de los logos */
+    height: auto;
+}
+.habilidades{
+    font-style: italic;
+}
+.cont_categoria {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    margin-left: 20px; /* Desplaza el contenedor hacia la izquierda */
+}
+
+.pregunta{
+    margin-top: 0px;
+}
+
+
+.cont_tabla{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tablaliderazgo{
+    width: 450px; 
+    height: auto;
+}
+
+
+.tabla {
+    min-width: 40%;
+    max-width: 75%; /* la tabla desde el 40% del contenedor al 75% */
+    border-collapse: collapse;
+    table-layout: fixed; /* Fijar el ancho de la tabla */
+}
+
+.tabla th, .tabla td {
+    border: 1px solid black;
+    padding: 8px;
+    font-weight: normal; /* Quitar la negrita */
+    font-size: 17px; /* Tamaño de fuente */
+    font-family: 'Times New Roman', Times, serif; /* Familia de fuente */
+    width: 50%; /* Ancho igual para ambas columnas */
+    box-sizing: border-box; /* Incluir el padding en el ancho total */
+    word-wrap: break-word; /* Dividir palabras largas */
+}
+
+
+.especial_tabla th, .especial_tabla td {
+    border: 1px solid black;
+    padding: 8px;
+    font-weight: normal; /* Quitar la negrita */
+    font-size: 17px; /* Tamaño de fuente */
+    font-family: 'Times New Roman', Times, serif; /* Familia de fuente */
+    box-sizing: border-box; /* Incluir el padding en el ancho total */
+    word-wrap: break-word; /* Dividir palabras largas */
+}
+
+.especial_tabla {
+    width: 40%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Fijar el ancho de la tabla */
+}
+
+.tablaDef{
+    margin-top: 50px;
+    width: 20%;
+    border-collapse: collapse;
+}
+
+.grafico{
+    width: 750px;
+    height: auto;
+}
