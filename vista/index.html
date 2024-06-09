@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Informe</title>
+    <title>{{lider}}</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -14,7 +14,7 @@
         <p class="t3">{{numSemestre}} Semestre {{ahno}}</p>
     </div>
     <div class="membrete">
-        <img src="logoJaveriana.png" class="logoJaveriana" />
+        <img src="imagenes/logoJaveriana.png" class="logoJaveriana" />
         <div class="titulo-y-estudiantes">
             <p class="titulo">Proyecto en {{clase}}</p>
             <div class="estudiantes">
@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <img src="cdio.png" class="cdio" />
+        <img src="imagenes/cdio.png" class="cdio" />
     </div>
     <div class="preguntas">
         <p class="habilidades">I. Calidad del Líder</p>
@@ -110,7 +110,7 @@
         <p>De acuerdo con los estilos de liderazgo de la siguiente Tabla, cuál o cuales considera fue el de su líder:
         </p>
         <div class="cont_tabla">
-            <img src="estilosLiderazgo.jpg" class="tablaliderazgo">
+            <img src="imagenes/estilosLiderazgo.jpg" class="tablaliderazgo">
         </div>
 
         <p>Respuestas por estudiante:</p>
@@ -161,10 +161,10 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th>Si</th>
-                        <th>No</th>
-                        <th>Si</th>
-                        <th>No</th>
+                        <th class="{{ 'highlight-green' if trabajarOtro1Si else '' }}">Sí</th>
+                        <th class="{{ 'highlight-green' if trabajarOtro1No else '' }}">No</th>
+                        <th class="{{ 'highlight-green' if trabajarOtro2Si else '' }}">Sí</th>
+                        <th class="{{ 'highlight-green' if trabajarOtro2No else '' }}">No</th>
                     </tr>
 
                 </tbody>

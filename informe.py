@@ -2,6 +2,14 @@ import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+from jinja2 import Environment, FileSystemLoader 
+import pdfkit
+
+
+#Carpeta para almacenar los gráficos
+if not os.path.exists('vista/graficos'):
+    os.makedirs('vista/graficos')
 
 #1. leer excel
 #2. agrupar por lider las evaluaciones
@@ -31,19 +39,26 @@ def crear_grafico(df, preguntas, titulo, lider, cont_preguntas):
         ax.bar(x + i * width, evals, width, label=labelEstudiante[i])
 
     # Configurar etiquetas y título
-    ax.set_title(titulo)
+    #ax.set_title(titulo)
     ax.set_xticks(x + width * (len(estudiantes) - 1) / 2)
     ax.set_xticklabels([f'Pregunta {p + cont_preguntas}' for p in range(len(preguntas))])
     ax.set_ylim(0, 5)  # Establecer los límites del eje y de 0 a 5
     ax.legend()
 
     plt.tight_layout()
-    plt.show()
+    #plt.show()
+
+    nombre_archivo = f'vista/graficos/{lider}_{titulo}.png'.replace(" ", "_").replace(",","")
+    nombre_archivo_toPDF = f'graficos/{lider}_{titulo}.png'.replace(" ", "_").replace(",","")
+    plt.savefig(nombre_archivo)
+    plt.close()
+    return nombre_archivo_toPDF
 
 
 def leerExcel(nombreArchivo):
     #leer el archivo de excel
     try:
+        print("Leyendo excel")
         df= pd.read_excel(nombreArchivo)
        
         # Definir las preguntas por grupo
@@ -90,34 +105,99 @@ def leerExcel(nombreArchivo):
     
         lideres = df["Seleccione el nombre de Líder a evaluar."].unique()
 
+        graficos = {lider: {} for lider in lideres}
         for lider in lideres:
             cont_preguntas=1
+            print(f'Graficos {lider}')
             for grupo, preguntas in grupos_preguntas.items():
-                titulo = f'Evaluaciones del Líder {lider} - {grupo}'
-                crear_grafico(df, preguntas, titulo, lider, cont_preguntas)
+                titulo = f'{grupo}'
+                nombre_archivo = crear_grafico(df, preguntas, titulo, lider, cont_preguntas)
+                graficos[lider][grupo]=nombre_archivo
                 cont_preguntas += len(preguntas)
+        
+        return df, graficos
 
     except FileNotFoundError:
         print("No se encontró el archivo especificado")
     except Exception as e:
         print("Ocurrió un error al leer el archivo", str(e))
 
+def generarPDFs(df, graficos, datos):
+    # Cargar la plantilla HTML usando Jinja2
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template('vista/index.html')
+
+    lideres = df["Seleccione el nombre de Líder a evaluar."].unique()
+
+    for lider in lideres:
+        # Filtrar la información de los estudiantes para el líder actual
+        grupo_lider = df[df["Seleccione el nombre de Líder a evaluar."] == lider]
+        estudiantes = grupo_lider['Escriba su nombre completo'].tolist()
+
+        # Columnas de texto
+        estilo_liderazgo = grupo_lider['De acuerdo con los estilos de liderazgo de la Tabla anterior, ¿Cuál o cuáles considera fue el de su líder.(señale con una x una o varias opciones)'].tolist()
+        razon_estilo = grupo_lider['¿Por qué considera que su líder cumple con los Estilos de Liderazgo que usted escogió en la pregunta anterior? (sí contestó NINGUNO, por favor explique)'].tolist()
+        trabajaria_otro = grupo_lider['¿Trabajaría bajo su liderazgo en otra oportunidad?'].tolist()
+        razon_trabajaria = grupo_lider['¿Por qué?'].tolist()
+
+         # Crear lógica para las respuestas de "¿Trabajaría bajo su liderazgo en otra oportunidad?"
+        trabajarOtro1Si = "Sí" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "SI" else ""
+        trabajarOtro1No = "No" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "NO" else ""
+        trabajarOtro2Si = "Sí" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "SI" else ""
+        trabajarOtro2No = "No" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "NO" else ""
+
+
+        # Rellenar la plantilla con los datos específicos de cada líder
+        html_content = template.render(
+            numSemestre=datos["numSemestre"],
+            ahno=datos["ahno"],
+            clase=datos["clase"],
+            estudiante1=estudiantes[0] if len(estudiantes) > 0 else "",
+            estudiante2=estudiantes[1] if len(estudiantes) > 1 else "",
+            lider=lider,
+            grafico1=graficos[lider]['Grupo 1'],
+            grafico2=graficos[lider]['Grupo 2'],
+            grafico3=graficos[lider]['Grupo 3'],
+            grafico4=graficos[lider]['Grupo 4'],
+            grafico5=graficos[lider]['Grupo 5'],
+            grafico6=graficos[lider]['Grupo 6'],
+            grafico7=graficos[lider]['Grupo 7'],
+            grafico8=graficos[lider]['Grupo 8'],
+            res1Estudiante1=estilo_liderazgo[0] if len(estilo_liderazgo) > 0 else "",  
+            res1Estudiante2=estilo_liderazgo[1] if len(estilo_liderazgo) > 1 else "",
+            res2Estudiante1=razon_estilo[0] if len(razon_estilo) > 0 else "",
+            res2Estudiante2=razon_estilo[1] if len(razon_estilo) > 1 else "",
+            trabajarOtro1Si=trabajarOtro1Si,
+            trabajarOtro1No=trabajarOtro1No,
+            trabajarOtro2Si=trabajarOtro2Si,
+            trabajarOtro2No=trabajarOtro2No,
+            res3Estudiante1=razon_trabajaria[0] if len(razon_trabajaria) > 0 else "",
+            res3Estudiante2=razon_trabajaria[1] if len(razon_trabajaria) > 1 else "",
+            defLider=""  # Agregar la calificación final real del líder
+        )
+
+        # Guardar el contenido HTML en un archivo temporal
+        with open(f'vista/temp_{lider}.html', 'w', encoding='utf-8') as f:
+            f.write(html_content)
+            print(f'Creado vista/temp_{lider}.html')
+
+        # # Convertir el archivo HTML a PDF
+        # pdfkit.from_file(f'temp_{lider}.html', f'Informe_{lider}.pdf')
+
 
 
 if __name__ == "__main__":
-    ruta_html = 'vista/index.html'
-    ruta_css = 'vista/style.css'
+    # ruta_html = 'vista/index.html'
+    # ruta_css = 'vista/style.css'
     datos = {
         "numSemestre": "Segundo", 
         "ahno": "2024", 
-        "clase": "Electrónica", 
-        "estudiante1": "Jorge Martinez", 
-        "estudiante2": "otra persona", 
-        "lider": "GONZALEZ CARRILLO JOSE GUILLERMO ANTONIO DE JESUS"
+        "clase": "Electrónica"
     }
-    ruta_salida = 'prueba2.pdf'
-
+    
     if len(sys.argv)<2:
         print("Recuerde: python informe.py nombreArchivo.xlsx")
     else:
-        leerExcel(sys.argv[1])
+        nombre_excel = "respuestas/" + sys.argv[1]
+        df, graficos = leerExcel(nombre_excel)
+        generarPDFs(df, graficos, datos)
