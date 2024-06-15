@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 from jinja2 import Environment, FileSystemLoader 
 import pdfkit
-
+import shutil
 
 # Configurar la ruta de wkhtmltopdf
 path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'  # Actualiza esta ruta según tu instalación
@@ -26,9 +26,21 @@ options = {
 def capitalizar_palabras(cadena):
     return cadena.title()
 
+#Carpeta para almacenar los elementos temporales
+if not os.path.exists('vista/temp'):
+    os.makedirs('vista/temp')
+    print("Carpeta Temporal")
+
 #Carpeta para almacenar los gráficos
-if not os.path.exists('vista/graficos'):
-    os.makedirs('vista/graficos')
+if not os.path.exists('vista/temp/graficos'):
+    os.makedirs('vista/temp/graficos')
+    print("Carpeta Graficos")
+
+
+#Carpeta para almacenar las respuestas
+if not os.path.exists('respuestas'):
+    os.makedirs('respuestas')
+    print("Carpeta respuestas")
 
 #1. leer excel
 #2. agrupar por lider las evaluaciones
@@ -67,7 +79,7 @@ def crear_grafico(df, preguntas, titulo, lider, cont_preguntas):
     plt.tight_layout()
     #plt.show()
 
-    nombre_archivo = f'vista/graficos/{lider}_{titulo}.png'.replace(" ", "_").replace(",","")
+    nombre_archivo = f'vista/temp/graficos/{lider}_{titulo}.png'.replace(" ", "_").replace(",","")
     nombre_archivo_toPDF = f'graficos/{lider}_{titulo}.png'.replace(" ", "_").replace(",","")
     plt.savefig(nombre_archivo)
     plt.close()
@@ -141,7 +153,7 @@ def leerExcel(nombreArchivo):
     except Exception as e:
         print("Ocurrió un error al leer el archivo", str(e))
 
-def generarPDFs(df, graficos, datos):
+def generarPDFs(df, graficos, datos, rutaSalida, mp):
     # Cargar la plantilla HTML usando Jinja2
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('vista/index.html')
@@ -197,28 +209,57 @@ def generarPDFs(df, graficos, datos):
         lider = capitalizar_palabras(lider)
 
         # Guardar el contenido HTML en un archivo temporal
-        with open(f'vista/temp_{lider}.html', 'w', encoding='utf-8') as f:
+        with open(f'vista/temp/temp_{lider}.html', 'w', encoding='utf-8') as f:
             f.write(html_content)
-            print(f'Creado vista/temp_{lider}.html')
+            print(f'Creado vista/temp/temp_{lider}.html')
 
-        ruta_leer = f'vista/temp_{lider}.html'
+        ruta_leer = f'vista/temp/temp_{lider}.html'
         # Convertir el archivo HTML a PDF
-        pdfkit.from_file(ruta_leer, output_path=f'Informe_{lider}.pdf', configuration=config, options=options)
+        pdfkit.from_file(ruta_leer, output_path=f'{rutaSalida}/{mp}_{lider}.pdf', configuration=config, options=options)
         print(f'Generado: Informe_{lider}.pdf')
+
+def deleteTemp():
+    # Ruta de la carpeta que quieres eliminar
+    carpeta_a_eliminar = 'vista/temp'
+
+    try:
+        shutil.rmtree(carpeta_a_eliminar)
+        print('Carpeta tempral eliminada')
+    except OSError as e:
+        print(f'Error al eliminar la carpeta {carpeta_a_eliminar}: {e}')
+
+def carpetaSalida(curso, mp):
+    if not os.path.exists('salida'):
+        os.mkdir('salida')
+    if not os.path.exists(f'salida/{curso}'):
+        os.mkdir(f'salida/{curso}')
+        os.mkdir(f'salida/{curso}/{mp}')
+    if not os.path.exists(f'salida/{curso}/{mp}'):
+        os.mkdir(f'salida/{curso}/{mp}')
 
 
 if __name__ == "__main__":
-    # ruta_html = 'vista/index.html'
-    # ruta_css = 'vista/style.css'
-    datos = {
-        "numSemestre": "Segundo", 
-        "ahno": "2024", 
-        "clase": "Electrónica"
-    }
     
-    if len(sys.argv)<2:
-        print("Recuerde: python informe.py nombreArchivo.xlsx")
+    if len(sys.argv)<4:
+        print("Recuerde: python informe.py nombreArchivo.xlsx [mp] [curso]")
     else:
         nombre_excel = "respuestas/" + sys.argv[1]
+        mp = sys.argv[2]
+        curso = sys.argv[3]
+        rutaSalida= (f'salida/{curso}/{mp}')
+
+        cursoGen=curso
+        if curso =="Electrónica_1" or curso =="Electrónica_2":
+            cursoGen= "Electrónica"
+
+        datos = {
+            "numSemestre": "Segundo", 
+            "ahno": "2024", 
+            "clase": cursoGen
+        }
+        
+        carpetaSalida(curso, mp)
+        print(mp, curso, nombre_excel)
         df, graficos = leerExcel(nombre_excel)
-        generarPDFs(df, graficos, datos)
+        generarPDFs(df, graficos, datos, rutaSalida, mp)
+        deleteTemp()
