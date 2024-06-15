@@ -7,6 +7,25 @@ from jinja2 import Environment, FileSystemLoader
 import pdfkit
 
 
+# Configurar la ruta de wkhtmltopdf
+path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'  # Actualiza esta ruta según tu instalación
+config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+options = {
+    'enable-local-file-access': None,  # Necesario para que wkhtmltopdf pueda acceder a archivos locales
+    'page-size': 'letter',
+    'encoding': 'UTF-8',
+    'margin-top': '0.75in',
+    'margin-right': '0.75in',
+    'margin-bottom': '0.75in',
+    'margin-left': '0.75in',
+    'no-outline': None
+}
+
+# Pone en mayuscula la primera letra de cada palabra
+def capitalizar_palabras(cadena):
+    return cadena.title()
+
 #Carpeta para almacenar los gráficos
 if not os.path.exists('vista/graficos'):
     os.makedirs('vista/graficos')
@@ -141,11 +160,10 @@ def generarPDFs(df, graficos, datos):
         razon_trabajaria = grupo_lider['¿Por qué?'].tolist()
 
          # Crear lógica para las respuestas de "¿Trabajaría bajo su liderazgo en otra oportunidad?"
-        trabajarOtro1Si = "Sí" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "SI" else ""
-        trabajarOtro1No = "No" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "NO" else ""
-        trabajarOtro2Si = "Sí" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "SI" else ""
-        trabajarOtro2No = "No" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "NO" else ""
-
+        trabajarOtro1Si = "SI" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "SI" else ""
+        trabajarOtro1No = "NO" if len(trabajaria_otro) > 0 and trabajaria_otro[0] == "NO" else ""
+        trabajarOtro2Si = "SI" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "SI" else ""
+        trabajarOtro2No = "NO" if len(trabajaria_otro) > 1 and trabajaria_otro[1] == "NO" else ""
 
         # Rellenar la plantilla con los datos específicos de cada líder
         html_content = template.render(
@@ -154,7 +172,7 @@ def generarPDFs(df, graficos, datos):
             clase=datos["clase"],
             estudiante1=estudiantes[0] if len(estudiantes) > 0 else "",
             estudiante2=estudiantes[1] if len(estudiantes) > 1 else "",
-            lider=lider,
+            lider=capitalizar_palabras(lider),
             grafico1=graficos[lider]['Grupo 1'],
             grafico2=graficos[lider]['Grupo 2'],
             grafico3=graficos[lider]['Grupo 3'],
@@ -176,14 +194,17 @@ def generarPDFs(df, graficos, datos):
             defLider=""  # Agregar la calificación final real del líder
         )
 
+        lider = capitalizar_palabras(lider)
+
         # Guardar el contenido HTML en un archivo temporal
         with open(f'vista/temp_{lider}.html', 'w', encoding='utf-8') as f:
             f.write(html_content)
             print(f'Creado vista/temp_{lider}.html')
 
-        # # Convertir el archivo HTML a PDF
-        # pdfkit.from_file(f'temp_{lider}.html', f'Informe_{lider}.pdf')
-
+        ruta_leer = f'vista/temp_{lider}.html'
+        # Convertir el archivo HTML a PDF
+        pdfkit.from_file(ruta_leer, output_path=f'Informe_{lider}.pdf', configuration=config, options=options)
+        print(f'Generado: Informe_{lider}.pdf')
 
 
 if __name__ == "__main__":

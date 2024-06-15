@@ -1,73 +1,79 @@
-body{
+body {
     width: 8.5in;
     height: 11in;
     margin: 0 auto;
-}
-
-p{
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 17px;
-}
-
-.encabezado{
-    text-align: right;
-    font-style: italic;
-}
-.t1{
-    font-size: 18px;
-}
-
-.t2{
-    font-size: 22px;
-}
-
-.t3{
-    font-size: 13px;
-}
-
-.logoJaveriana{
-    height: 180px;
-    width: 130px;
-}
-.membrete {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid black; /* Línea negra separadora */
-}
-
-.titulo-y-estudiantes {
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
 }
 
-.titulo {
-    margin-bottom: 20px; /* Espacio entre el título y los estudiantes */
+p {
+    font-family: 'Times New Roman', Times, serif;
     font-size: 21px;
 }
 
-.estudiantes {
-    display: flex;
-    flex-direction: column;
+.encabezado {
+    text-align: right;
+    font-style: italic;
 }
 
-.integrante, .lider {
-    margin: 5px 0; /* Ajusta el espacio entre los párrafos si es necesario */
+.t1 {
+    font-size: 22px;
+}
+
+.t2 {
+    font-size: 26px;
+}
+
+.t3 {
+    font-size: 17px;
+}
+
+.membrete {
+    border-bottom: 2px solid black; /* Línea negra separadora */
+    padding: 10px;
+    width: 100%;
 }
 
 .logoJaveriana {
-    width: 110px; /* Ajusta el tamaño de los logos */
+    width: 130px; /* Ancho máximo de los logos */
     height: auto;
 }
+
 .cdio {
-    width: 150px; /* Ajusta el tamaño de los logos */
+    width: 170px; /* Ancho máximo de los logos */
     height: auto;
 }
-.habilidades{
+
+.titulo-y-estudiantes {
+    text-align: center;
+    margin: 0 20px; /* Margen entre los elementos */
+}
+
+.titulo {
+    margin-bottom: 10px; /* Espacio entre el título y los estudiantes */
+    font-size: 24px;
+}
+
+.estudiantes {
+    text-align: center;
+}
+
+.integrante, .lider {
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.tablaMembrete{
+    width: 100%;
+}
+
+
+/* Estilos adicionales para el resto del documento */
+.habilidades {
     font-style: italic;
 }
+
 .cont_categoria {
     margin-bottom: 20px;
     padding: 10px;
@@ -75,28 +81,25 @@ p{
     margin-left: 20px; /* Desplaza el contenedor hacia la izquierda */
 }
 
-.pregunta{
+.pregunta {
     margin-top: 0px;
 }
 
-
-.cont_tabla{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.cont_tabla {
+    text-align: center;
 }
 
-.tablaliderazgo{
-    width: 450px; 
+.tablaliderazgo {
+    width: 500px; 
     height: auto;
 }
-
 
 .tabla {
     min-width: 40%;
     max-width: 75%; /* la tabla desde el 40% del contenedor al 75% */
     border-collapse: collapse;
     table-layout: fixed; /* Fijar el ancho de la tabla */
+    margin: 0 auto; /* Centrar la tabla */
 }
 
 .tabla th, .tabla td {
@@ -109,7 +112,6 @@ p{
     box-sizing: border-box; /* Incluir el padding en el ancho total */
     word-wrap: break-word; /* Dividir palabras largas */
 }
-
 
 .especial_tabla th, .especial_tabla td {
     border: 1px solid black;
@@ -125,15 +127,23 @@ p{
     width: 40%;
     border-collapse: collapse;
     table-layout: fixed; /* Fijar el ancho de la tabla */
+    margin: 0 auto; /* Centrar la tabla */
 }
 
-.tablaDef{
+.tablaDef {
     margin-top: 50px;
     width: 20%;
     border-collapse: collapse;
+    margin: 0 auto; /* Centrar la tabla */
 }
 
-.grafico{
-    width: 600px;
+.grafico {
+    width: 750px;
     height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.salto2{
+    margin-bottom: 300px;
 }
