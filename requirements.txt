@@ -1,0 +1,7 @@
+pandas
+numpy
+matplotlib
+Jinja2
+pdfkit
+python-docx
+pdf2docx

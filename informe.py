@@ -10,8 +10,6 @@ from docx import Document
 from pdf2docx import Converter
 
 
-
-
 # Configurar la ruta de wkhtmltopdf
 path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'  # Actualiza esta ruta según tu instalación
 config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
