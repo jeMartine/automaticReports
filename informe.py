@@ -6,6 +6,11 @@ import os
 from jinja2 import Environment, FileSystemLoader 
 import pdfkit
 import shutil
+from docx import Document
+from pdf2docx import Converter
+
+
+
 
 # Configurar la ruta de wkhtmltopdf
 path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'  # Actualiza esta ruta según tu instalación
@@ -35,7 +40,6 @@ if not os.path.exists('vista/temp'):
 if not os.path.exists('vista/temp/graficos'):
     os.makedirs('vista/temp/graficos')
     print("Carpeta Graficos")
-
 
 #Carpeta para almacenar las respuestas
 if not os.path.exists('respuestas'):
@@ -137,6 +141,8 @@ def leerExcel(nombreArchivo):
         lideres = df["Seleccione el nombre de Líder a evaluar."].unique()
 
         graficos = {lider: {} for lider in lideres}
+        promedios = {}
+
         for lider in lideres:
             cont_preguntas=1
             print(f'Graficos {lider}')
@@ -146,14 +152,18 @@ def leerExcel(nombreArchivo):
                 graficos[lider][grupo]=nombre_archivo
                 cont_preguntas += len(preguntas)
         
-        return df, graficos
+            #calcular promedio de evaluación
+            preguntas_total = sum([len(preguntas) for preguntas in grupos_preguntas.values()])
+            promedio_lider =  df[df["Seleccione el nombre de Líder a evaluar."] == lider ].iloc[:, 3:3+preguntas_total].mean(axis=1).mean()
+            promedios[lider] = round(promedio_lider, 2)
+        return df, graficos, promedios
 
     except FileNotFoundError:
         print("No se encontró el archivo especificado")
     except Exception as e:
         print("Ocurrió un error al leer el archivo", str(e))
 
-def generarPDFs(df, graficos, datos, rutaSalida, mp):
+def generarPDFs(df, graficos, datos, rutaSalida, mp, promedios):
     # Cargar la plantilla HTML usando Jinja2
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('vista/index.html')
@@ -182,8 +192,8 @@ def generarPDFs(df, graficos, datos, rutaSalida, mp):
             numSemestre=datos["numSemestre"],
             ahno=datos["ahno"],
             clase=datos["clase"],
-            estudiante1=estudiantes[0] if len(estudiantes) > 0 else "",
-            estudiante2=estudiantes[1] if len(estudiantes) > 1 else "",
+            estudiante1=capitalizar_palabras(estudiantes[0] if len(estudiantes) > 0 else ""),
+            estudiante2=capitalizar_palabras(estudiantes[1] if len(estudiantes) > 1 else ""),
             lider=capitalizar_palabras(lider),
             grafico1=graficos[lider]['Grupo 1'],
             grafico2=graficos[lider]['Grupo 2'],
@@ -203,20 +213,30 @@ def generarPDFs(df, graficos, datos, rutaSalida, mp):
             trabajarOtro2No=trabajarOtro2No,
             res3Estudiante1=razon_trabajaria[0] if len(razon_trabajaria) > 0 else "",
             res3Estudiante2=razon_trabajaria[1] if len(razon_trabajaria) > 1 else "",
-            defLider=""  # Agregar la calificación final real del líder
+            defLider=promedios[lider]
         )
 
         lider = capitalizar_palabras(lider)
-
+        
         # Guardar el contenido HTML en un archivo temporal
         with open(f'vista/temp/temp_{lider}.html', 'w', encoding='utf-8') as f:
             f.write(html_content)
             print(f'Creado vista/temp/temp_{lider}.html')
 
         ruta_leer = f'vista/temp/temp_{lider}.html'
+        ruta_salida = f'{rutaSalida}/{mp}_{lider}.pdf'
+        ruta_salida_word = f'{rutaSalida}/{mp}_{lider}.docx'
         # Convertir el archivo HTML a PDF
-        pdfkit.from_file(ruta_leer, output_path=f'{rutaSalida}/{mp}_{lider}.pdf', configuration=config, options=options)
+        pdfkit.from_file(ruta_leer, output_path=ruta_salida, configuration=config, options=options)
         print(f'Generado: Informe_{lider}.pdf')
+
+        # Crear el documento de Word
+        cv= Converter(ruta_salida)
+        cv.convert(ruta_salida_word, start=0, end=None)
+        cv.close()
+        print(f'Word :{mp}_{lider}.docx')
+
+
 
 def deleteTemp():
     # Ruta de la carpeta que quieres eliminar
@@ -237,20 +257,44 @@ def carpetaSalida(curso, mp):
     if not os.path.exists(f'salida/{curso}/{mp}'):
         os.mkdir(f'salida/{curso}/{mp}')
 
+def crearArchivoExcelPromedios(promedios, rutaSalida, cursoGen, mp):
+    # Crear un DataFrame a partir del diccionario de promedios
+    df_promedios = pd.DataFrame(list(promedios.items()), columns=['Líder', 'Promedio de Evaluación'])
+    df_promedios['mp']= mp
+    archivo_excel_promedios = os.path.join(rutaSalida, f'{cursoGen}.xlsx')
+
+    # Si el archivo Excel ya existe, leerlo y combinarlo con los nuevos datos
+    if os.path.exists(archivo_excel_promedios):
+        df_existente = pd.read_excel(archivo_excel_promedios)
+        df_combined = pd.concat([df_existente, df_promedios], ignore_index=True)
+    else:
+        df_combined = df_promedios
+
+    # Guardar el DataFrame combinado en un archivo Excel
+    df_combined.to_excel(archivo_excel_promedios, index=False)
+    print(f'Excel promedios actualizado: {archivo_excel_promedios}')
 
 if __name__ == "__main__":
     
-    if len(sys.argv)<4:
-        print("Recuerde: python informe.py nombreArchivo.xlsx [mp] [curso]")
+    if len(sys.argv)<2:
+        print("Recuerde: python informe.py nombreArchivo.xlsx")
     else:
-        nombre_excel = "respuestas/" + sys.argv[1]
-        mp = sys.argv[2]
-        curso = sys.argv[3]
-        rutaSalida= (f'salida/{curso}/{mp}')
+        excel = sys.argv[1]
+        rutaLeerExcel = "respuestas/" + excel
+
+        parts = excel.split('_')
+
+        mp = parts[0]
+        curso = parts[1].split('.')[0]
+        rutaSalida = (f'salida/{curso}/{mp}')
+        rutaSalidaExcel = (f'salida/{curso}')
 
         cursoGen=curso
-        if curso =="Electrónica_1" or curso =="Electrónica_2":
-            cursoGen= "Electrónica"
+        
+        if "elec" in cursoGen.lower():
+            cursoGen = "Electrónica"
+        elif "meca" in cursoGen.lower():
+            cursoGen = "Mecatrónica"
 
         datos = {
             "numSemestre": "Segundo", 
@@ -259,7 +303,10 @@ if __name__ == "__main__":
         }
         
         carpetaSalida(curso, mp)
-        print(mp, curso, nombre_excel)
-        df, graficos = leerExcel(nombre_excel)
-        generarPDFs(df, graficos, datos, rutaSalida, mp)
+        print(mp, curso, rutaLeerExcel)
+        df, graficos, promedios = leerExcel(rutaLeerExcel)
+        generarPDFs(df, graficos, datos, rutaSalida, mp, promedios)
         deleteTemp()
+
+        # Crear el archivo Excel de promedios
+        crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp)

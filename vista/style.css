@@ -87,10 +87,11 @@ p {
 
 .cont_tabla {
     text-align: center;
+    margin-bottom: 50px;
 }
 
 .tablaliderazgo {
-    width: 500px; 
+    width: 550px; 
     height: auto;
 }
 
@@ -144,6 +145,17 @@ p {
     margin: 0 auto;
 }
 
+.graficoUno {
+    width: 730px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
 .salto2{
     margin-bottom: 300px;
+}
+
+.highlight-green {
+    background-color: #4db35e; /* Verde claro */
 }
