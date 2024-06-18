@@ -8,6 +8,7 @@ import pdfkit
 import shutil
 from docx import Document
 from pdf2docx import Converter
+import time
 
 
 # Configurar la ruta de wkhtmltopdf
@@ -43,12 +44,6 @@ if not os.path.exists('vista/temp/graficos'):
 if not os.path.exists('respuestas'):
     os.makedirs('respuestas')
     print("Carpeta respuestas")
-
-#1. leer excel
-#2. agrupar por lider las evaluaciones
-#3. crear las gráficas
-#4. cargar el html
-#5. exportar html a pdf y word 
 
 def crear_grafico(df, preguntas, titulo, lider, cont_preguntas):
 
@@ -187,6 +182,9 @@ def generarPDFs(df, graficos, datos, rutaSalida, mp, promedios):
 
         # Rellenar la plantilla con los datos específicos de cada líder
         html_content = template.render(
+            logoJaveriana = "../imagenes/logoJaveriana.png",
+            logoCDIO = "../imagenes/cdio.png",
+            tablaLiderazgo = "../imagenes/estilosLiderazgo.jpg", 
             numSemestre=datos["numSemestre"],
             ahno=datos["ahno"],
             clase=datos["clase"],
@@ -270,41 +268,62 @@ def crearArchivoExcelPromedios(promedios, rutaSalida, cursoGen, mp):
 
     # Guardar el DataFrame combinado en un archivo Excel
     df_combined.to_excel(archivo_excel_promedios, index=False)
-    print(f'Excel promedios actualizado: {archivo_excel_promedios}')
+    print(f'Promedios en excel: {archivo_excel_promedios}')
+
+def archivosCarpeta():
+    nombres = []
+
+    for nombreArchivo in os.listdir("respuestas/"):
+        ruta_archivo = os.path.join("respuestas/", nombreArchivo)
+        if(os.path.isfile(ruta_archivo)):
+            nombres.append(nombreArchivo)
+    return nombres
+
+
+def informesPorExcel(entrada):
+    excel = entrada
+    rutaLeerExcel = "respuestas/" + excel
+    print (f"rutaLeerExcel: {rutaLeerExcel}")
+    parts = excel.split('_')
+
+    mp = parts[0]
+    curso = parts[1].split('.')[0]
+    rutaSalida = (f'salida/{curso}/{mp}')
+    rutaSalidaExcel = (f'salida/{curso}')
+
+    cursoGen=curso
+    
+    if "elec" in cursoGen.lower():
+        cursoGen = "Electrónica"
+    elif "meca" in cursoGen.lower():
+        cursoGen = "Mecatrónica"
+
+    datos = {
+        "numSemestre": "Segundo", 
+        "ahno": "2024", 
+        "clase": cursoGen
+    }
+    
+    carpetaSalida(curso, mp)
+    print(mp, curso, rutaLeerExcel)
+    df, graficos, promedios = leerExcel(rutaLeerExcel)
+    generarPDFs(df, graficos, datos, rutaSalida, mp, promedios)
+
+    # Crear el archivo Excel de promedios
+    crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp)
 
 if __name__ == "__main__":
     
     if len(sys.argv)<2:
         print("Recuerde: python informe.py nombreArchivo.xlsx")
     else:
-        excel = sys.argv[1]
-        rutaLeerExcel = "respuestas/" + excel
-
-        parts = excel.split('_')
-
-        mp = parts[0]
-        curso = parts[1].split('.')[0]
-        rutaSalida = (f'salida/{curso}/{mp}')
-        rutaSalidaExcel = (f'salida/{curso}')
-
-        cursoGen=curso
-        
-        if "elec" in cursoGen.lower():
-            cursoGen = "Electrónica"
-        elif "meca" in cursoGen.lower():
-            cursoGen = "Mecatrónica"
-
-        datos = {
-            "numSemestre": "Segundo", 
-            "ahno": "2024", 
-            "clase": cursoGen
-        }
-        
-        carpetaSalida(curso, mp)
-        print(mp, curso, rutaLeerExcel)
-        df, graficos, promedios = leerExcel(rutaLeerExcel)
-        generarPDFs(df, graficos, datos, rutaSalida, mp, promedios)
-        deleteTemp()
-
-        # Crear el archivo Excel de promedios
-        crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp)
+        entrada = sys.argv[1]
+        if entrada == "-r":
+            rutasArchivos = archivosCarpeta()
+            for archivo in rutasArchivos:
+                print (f'Informes de {archivo}')
+                informesPorExcel (archivo)
+                time.sleep(2)
+        else: 
+            informesPorExcel(entrada)
+    deleteTemp()
