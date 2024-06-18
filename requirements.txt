@@ -6,3 +6,4 @@ pdfkit
 python-docx
 pdf2docx
 time
+re

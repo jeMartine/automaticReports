@@ -9,6 +9,7 @@ import shutil
 from docx import Document
 from pdf2docx import Converter
 import time
+import re 
 
 
 # Configurar la ruta de wkhtmltopdf
@@ -253,11 +254,11 @@ def carpetaSalida(curso, mp):
     if not os.path.exists(f'salida/{curso}/{mp}'):
         os.mkdir(f'salida/{curso}/{mp}')
 
-def crearArchivoExcelPromedios(promedios, rutaSalida, cursoGen, mp):
+def crearArchivoExcelPromedios(promedios, rutaSalida, cursoGen, mp, numeroClase):
     # Crear un DataFrame a partir del diccionario de promedios
     df_promedios = pd.DataFrame(list(promedios.items()), columns=['Líder', 'Promedio de Evaluación'])
     df_promedios['mp']= mp
-    archivo_excel_promedios = os.path.join(rutaSalida, f'{cursoGen}.xlsx')
+    archivo_excel_promedios = os.path.join(rutaSalida, f'{cursoGen}{numeroClase}.xlsx')
 
     # Si el archivo Excel ya existe, leerlo y combinarlo con los nuevos datos
     if os.path.exists(archivo_excel_promedios):
@@ -282,12 +283,25 @@ def archivosCarpeta():
 
 def informesPorExcel(entrada):
     excel = entrada
+    #expresion regular para encontrar 1 o 2 en una cadena
+    pattern = '(1|2)'
+    numeroClase = 0
     rutaLeerExcel = "respuestas/" + excel
-    print (f"rutaLeerExcel: {rutaLeerExcel}")
+
     parts = excel.split('_')
 
     mp = parts[0]
     curso = parts[1].split('.')[0]
+    match = re.search(pattern, curso)
+
+
+    if match:
+        numeroClase = "_" + match.group() 
+        
+    else:
+        numeroClase = ""
+
+
     rutaSalida = (f'salida/{curso}/{mp}')
     rutaSalidaExcel = (f'salida/{curso}')
 
@@ -310,7 +324,7 @@ def informesPorExcel(entrada):
     generarPDFs(df, graficos, datos, rutaSalida, mp, promedios)
 
     # Crear el archivo Excel de promedios
-    crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp)
+    crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp, numeroClase)
 
 if __name__ == "__main__":
     
