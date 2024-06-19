@@ -60,12 +60,12 @@ python informe.py -all
 El script se ejecuta desde la línea de comandos. Si no se proporcionan argumentos suficientes, se muestra un mensaje recordando el uso correcto.
 
 ## Estructura del Proyecto
-`informe.py` Script principal para generar informes.
-`vista/index.html` Plantilla HTML para los informes.
-`respuestas/` Carpeta para almacenar los archivos de Excel con los datos de evaluación.
-`vista/temp/` Carpeta temporal para archivos intermedios.
-`salida/` Carpeta para almacenar los informes generados.
-`imagenes/` Carpeta para las imágenes utilizadas en los informes.
+- `informe.py` Script principal para generar informes.
+- `vista/index.html` Plantilla HTML para los informes.
+- `respuestas/` Carpeta para almacenar los archivos de Excel con los datos de evaluación.
+- `vista/temp/` Carpeta temporal para archivos intermedios.
+- `salida/` Carpeta para almacenar los informes generados.
+- `imagenes/` Carpeta para las imágenes utilizadas en los informes.
 
 ## Contribuciones
 Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para discutir cualquier cambio que te gustaría hacer.
