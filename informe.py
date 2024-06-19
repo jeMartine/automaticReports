@@ -326,18 +326,34 @@ def informesPorExcel(entrada):
     # Crear el archivo Excel de promedios
     crearArchivoExcelPromedios(promedios, rutaSalidaExcel, cursoGen, mp, numeroClase)
 
+def validadEntrada(entrada):
+    pattern = 'mp[1-3]_.*\.xls|-all'
+
+    match = re.search(pattern, entrada)
+
+    return match
+
+
+
 if __name__ == "__main__":
+    entrada = ""
     
-    if len(sys.argv)<2:
-        print("Recuerde: python informe.py nombreArchivo.xlsx")
+    if len(sys.argv) < 2:
+        print("Recuerde: \nPara un archivo use: \n\t python informe.py [mp#]_[curso].xlsx")
+        print("Para multiples archivos use: \n\t python informe.py -all")
     else:
-        entrada = sys.argv[1]
-        if entrada == "-r":
-            rutasArchivos = archivosCarpeta()
-            for archivo in rutasArchivos:
-                print (f'Informes de {archivo}')
-                informesPorExcel (archivo)
-                time.sleep(2)
-        else: 
-            informesPorExcel(entrada)
-    deleteTemp()
+        entrada = sys.argv[1]  
+        if ( not validadEntrada(entrada)):
+            print("Recuerde: \nPara un archivo use: \n\t python informe.py [mp#]_[curso].xlsx")
+            print("Para multiples archivos use: \n\t python informe.py -all")
+        else:
+            print(entrada)    
+            if entrada == "-all":
+                rutasArchivos = archivosCarpeta()
+                for archivo in rutasArchivos:
+                    print (f'Informes de {archivo}')
+                    informesPorExcel (archivo)
+                    time.sleep(2)
+            else: 
+                informesPorExcel(entrada)
+            deleteTemp()
