@@ -34,7 +34,7 @@ Además, necesitas tener instalado `wkhtmltopdf`. Puedes descargarlo desde [aqu�
 Para generar los informes, coloca tus archivos de Excel en la carpeta `respuestas`. Luego, ejecuta el siguiente comando:
 
 ```bash
-python informe.py nombreArchivo.xlsx
+python informe.py [mp#]_[curso].xlsx
 ```
 
 Para generar informes para todos los archivos en la carpeta respuestas, utiliza:
@@ -42,6 +42,7 @@ Para generar informes para todos los archivos en la carpeta respuestas, utiliza:
 ```bash
 python informe.py -all
 ```
+Puedes usar el archivo mp3_cursoPlantilla.xlsx como una base para entender el funcionamiento
 
 # Descripción del Código
 ## Funciones Principales
